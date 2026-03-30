@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innovation Leadership Coach</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      background: #800000;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .app-header h1 { font-size: 20px; font-weight: bold; }
+    .app-header .subtitle { font-size: 12px; opacity: 0.75; margin-top: 3px; }
+    .header-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.85);
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+    }
+    .header-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    /* ── USER VIEW ── */
+    .user-container { max-width: 760px; margin: 0 auto; padding: 24px 16px 100px; }
+
+    .description-card {
+      background: white;
+      border-left: 4px solid #800000;
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #58595b;
+    }
+
+    .chat-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    #messages {
+      height: 400px;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .message.user {
+      background: #800000;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .message.coach {
+      background: #f0f0f0;
+      color: #333;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .message.typing {
+      background: #f0f0f0;
+      color: #999;
+      align-self: flex-start;
+      font-style: italic;
+      font-size: 13px;
+    }
+
+    /* ── SATISFACTION ── */
+    #satisfaction-area {
+      padding: 14px 20px;
+      background: #fff8e1;
+      border-top: 1px solid #ffe082;
+      text-align: center;
+      display: none;
+    }
+    #satisfaction-area p {
+      font-size: 13px;
+      color: #58595b;
+      margin-bottom: 10px;
+    }
+    .emoji-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .emoji-btn {
+      font-size: 22px;
+      cursor: pointer;
+      background: none;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      padding: 4px 5px;
+      transition: all 0.15s;
+      line-height: 1;
+    }
+    .emoji-btn:hover {
+      border-color: #800000;
+      background: #fff0f0;
+      transform: scale(1.2);
+    }
+
+    /* ── INPUT AREA ── */
+    .input-area {
+      display: flex;
+      gap: 10px;
+      padding: 14px 16px;
+      border-top: 1px solid #eee;
+    }
+    #user-input {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      resize: none;
+      height: 48px;
+      line-height: 1.5;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #user-input:focus { border-color: #800000; }
+    .send-btn {
+      background: #800000;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .send-btn:hover { background: #600000; }
+    .send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* ── FLOATING FEEDBACK BUTTON ── */
+    #feedback-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #FFD700;
+      color: #333;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 100;
+      font-family: Arial, sans-serif;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #feedback-fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    }
+
+    /* ── FEEDBACK MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      display: none;
+    }
+    .modal {
+      position: fixed;
+      bottom: 90px;
+      right: 28px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      padding: 20px;
+      width: 320px;
+      z-index: 201;
+      display: none;
+    }
+    .modal h3 { font-size: 15px; margin-bottom: 4px; }
+    .modal p { font-size: 12px; color: #888; margin-bottom: 12px; }
+    .modal textarea {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      resize: none;
+      height: 100px;
+      outline: none;
+    }
+    .modal textarea:focus { border-color: #800000; }
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      justify-content: flex-end;
+    }
+    .btn-cancel {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+    .btn-send {
+      background: #FFD700;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+
+    /* ── ADMIN VIEW ── */
+    .admin-container { max-width: 960px; margin: 0 auto; padding: 28px 16px; }
+
+    /* Password gate */
+    .gate-card {
+      max-width: 360px;
+      margin: 80px auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      padding: 36px;
+      text-align: center;
+    }
+    .gate-card h2 { color: #800000; margin-bottom: 8px; }
+    .gate-card p { color: #888; font-size: 13px; margin-bottom: 20px; }
+    .gate-card input {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      outline: none;
+      margin-bottom: 12px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .gate-card input:focus { border-color: #800000; }
+    .gate-card button {
+      width: 100%;
+      background: #800000;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+    .gate-error {
+      color: #c00;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* Admin tabs */
+    .admin-tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+      color: #888;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+    .tab-btn.active { color: #800000; border-bottom-color: #800000; font-weight: bold; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Chip grid */
+    .chip-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .chip-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-left: 4px solid #ddd;
+    }
+    .chip-card.on { border-left-color: #800000; }
+    .chip-name { font-size: 14px; font-weight: bold; color: #333; }
+    .chip-status { font-size: 11px; color: #aaa; margin-top: 3px; }
+    .chip-card.on .chip-status { color: #800000; }
+
+    /* Toggle switch */
+    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: #800000; }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+    /* Log table */
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      font-size: 13px;
+    }
+    .log-table th {
+      background: #800000;
+      color: white;
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .log-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      color: #444;
+      vertical-align: top;
+    }
+    .log-table tr:last-child td { border-bottom: none; }
+    .log-table tr:hover td { background: #fafafa; }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: #bbb;
+      font-size: 14px;
+      background: white;
+      border-radius: 8px;
+    }
+
+    /* Satisfaction chart */
+    .sat-chart {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .sat-chart h3 { font-size: 15px; color: #333; margin-bottom: 20px; }
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      height: 160px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 4px;
+    }
+    .chart-bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      height: 100%;
+      justify-content: flex-end;
+      min-width: 36px;
+    }
+    .chart-bar {
+      width: 100%;
+      background: #800000;
+      border-radius: 4px 4px 0 0;
+      min-height: 4px;
+    }
+    .chart-bar-label { font-size: 10px; color: #888; }
+    .chart-bar-value { font-size: 11px; font-weight: bold; color: #800000; }
+
+    /* Feedback items */
+    .feedback-item {
+      background: white;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .feedback-item .fb-time { font-size: 11px; color: #aaa; margin-bottom: 5px; }
+    .feedback-item .fb-msg { font-size: 14px; color: #333; line-height: 1.5; }
+
+    .admin-toprow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .admin-toprow h2 { color: #800000; font-size: 20px; }
+    .refresh-btn {
+      background: #800000;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+
+    @media (max-width: 600px) {
+      .emoji-btn { font-size: 18px; gap: 4px; }
+      .modal { width: calc(100vw - 32px); right: 16px; }
+      .message { max-width: 90%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════ -->
+<!--  USER VIEW                          -->
+<!-- ════════════════════════════════════ -->
+<div id="user-view">
+
+  <header class="app-header">
+    <div>
+      <h1>Innovation Leadership Coach</h1>
+      <div class="subtitle">Chicago Booth · Powered by AI</div>
+    </div>
+    <button class="header-btn" onclick="showAdmin()">Admin →</button>
+  </header>
+
+  <div class="user-container">
+
+    <div class="description-card">
+      Your Innovation Leadership Coach is here to help you think more deeply about the frameworks, tools, and mindsets we're exploring together this quarter. Rather than giving you answers, your coach asks questions to help you discover your own insights — just like a real mentor would. Share an idea you're developing, a challenge you're facing, or a concept you want to pressure-test. The coach is ready when you are.
+    </div>
+
+    <div class="chat-card">
+      <div id="messages">
+        <div class="message coach">
+          Hi! I'm your Innovation Leadership Coach. What's on your mind today — an idea you're developing, a challenge you're wrestling with, or a concept you want to think through together?
+        </div>
+      </div>
+
+      <div id="satisfaction-area">
+        <p>How helpful was that response?</p>
+        <div class="emoji-row">
+          <button class="emoji-btn" onclick="submitSatisfaction(1)" title="1 – Not helpful">😢</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(2)" title="2">😞</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(3)" title="3">😕</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(4)" title="4">😐</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(5)" title="5">🙂</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(6)" title="6">😊</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(7)" title="7">😀</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(8)" title="8">😄</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(9)" title="9">😁</button>
+          <button class="emoji-btn" onclick="submitSatisfaction(10)" title="10 – Very helpful">🤩</button>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <textarea id="user-input"
+          placeholder="Type your message here… (Enter to send, Shift+Enter for new line)"
+          onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+  </div>
+
+  <button id="feedback-fab" onclick="showFeedbackModal()">🐛 Give Feedback</button>
+</div>
+
+
+<!-- ════════════════════════════════════ -->
+<!--  ADMIN VIEW                         -->
+<!-- ════════════════════════════════════ -->
+<div id="admin-view" style="display:none">
+
+  <header class="app-header">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <div class="subtitle">Innovation Leadership Coach</div>
+    </div>
+    <button class="header-btn" onclick="showUser()">← Back to Coach</button>
+  </header>
+
+  <!-- Password gate -->
+  <div id="admin-gate">
+    <div class="gate-card">
+      <h2>Admin Access</h2>
+      <p>Enter your admin password to continue.</p>
+      <input type="password" id="admin-pw-input"
+        placeholder="Password"
+        onkeydown="if(event.key==='Enter') adminLogin()" />
+      <div class="gate-error" id="gate-error">Incorrect password. Try again.</div>
+      <button onclick="adminLogin()">Enter Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="admin-dashboard" style="display:none">
+    <div class="admin-container">
+
+      <div class="admin-toprow">
+        <h2>Dashboard</h2>
+        <button class="refresh-btn" onclick="loadAdminData()">↻ Refresh</button>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="tab-btn active" onclick="switchTab('chips', this)">🧩 Skill Chips</button>
+        <button class="tab-btn" onclick="switchTab('usage', this)">📋 Usage Log</button>
+        <button class="tab-btn" onclick="switchTab('satisfaction', this)">😊 Satisfaction</button>
+        <button class="tab-btn" onclick="switchTab('feedback', this)">💬 Feedback</button>
+      </div>
+
+      <div id="tab-chips" class="tab-panel active">
+        <p style="font-size:13px;color:#888;margin-bottom:16px;">
+          Toggle frameworks on or off. Only enabled chips are active in the coach this week.
+        </p>
+        <div class="chip-grid" id="chip-grid"><!-- JS fills this --></div>
+      </div>
+
+      <div id="tab-usage" class="tab-panel">
+        <div id="usage-content">
+          <div class="empty-state">No usage yet. Conversations will appear here.</div>
+        </div>
+      </div>
+
+      <div id="tab-satisfaction" class="tab-panel">
+        <div class="sat-chart">
+          <h3>Daily Average Satisfaction Score (1–10)</h3>
+          <div class="chart-bars" id="sat-bars">
+            <div style="color:#bbb;font-size:13px;padding:20px 0;">No ratings yet.</div>
+          </div>
+          <div id="sat-summary" style="margin-top:14px;font-size:13px;color:#888;"></div>
+        </div>
+      </div>
+
+      <div id="tab-feedback" class="tab-panel">
+        <div id="feedback-content">
+          <div class="empty-state">No feedback yet. Submissions will appear here.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════ -->
+<!--  FEEDBACK MODAL                     -->
+<!-- ════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeFeedbackModal()"></div>
+<div class="modal" id="feedback-modal">
+  <h3>Share Your Feedback</h3>
+  <p>What's working? What could be better? We read every note.</p>
+  <textarea id="feedback-text" placeholder="Type your feedback here…"></textarea>
+  <div class="modal-actions">
+    <button class="btn-cancel" onclick="closeFeedbackModal()">Cancel</button>
+    <button class="btn-send" onclick="submitFeedback()">Send →</button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════ -->
+<!--  JAVASCRIPT                         -->
+<!-- ════════════════════════════════════ -->
+<script>
+
+  // ── App state ──
+  let conversationHistory = [];
+  let adminPassword = '';
+
+  // ─────────────────────────────
+  // NAVIGATION
+  // ─────────────────────────────
+
+  function showAdmin() {
+    document.getElementById('user-view').style.display = 'none';
+    document.getElementById('admin-view').style.display = 'block';
+    document.getElementById('admin-gate').style.display = 'block';
+    document.getElementById('admin-dashboard').style.display = 'none';
+    document.getElementById('admin-pw-input').value = '';
+    document.getElementById('gate-error').style.display = 'none';
+  }
+
+  function showUser() {
+    document.getElementById('admin-view').style.display = 'none';
+    document.getElementById('user-view').style.display = 'block';
+  }
+
+  // ─────────────────────────────
+  // ADMIN LOGIN
+  // ─────────────────────────────
+
+  async function adminLogin() {
+    const pw = document.getElementById('admin-pw-input').value;
+    try {
+      const res = await fetch('/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        adminPassword = pw;
+        document.getElementById('admin-gate').style.display = 'none';
+        document.getElementById('admin-dashboard').style.display = 'block';
+        loadAdminData();
+      } else {
+        document.getElementById('gate-error').style.display = 'block';
+      }
+    } catch (err) {
+      document.getElementById('gate-error').style.display = 'block';
+    }
+  }
+
+  // ─────────────────────────────
+  // LOAD ADMIN DATA
+  // ─────────────────────────────
+
+  async function loadAdminData() {
+    try {
+      const res = await fetch('/admin/data', {
+        headers: { 'x-admin-password': adminPassword }
+      });
+      const data = await res.json();
+      renderChips(data.chips);
+      renderUsage(data.usageLog);
+      renderSatisfaction(data.satisfactionLog);
+      renderFeedback(data.feedbackLog);
+    } catch (err) {
+      console.error('Failed to load admin data:', err);
+    }
+  }
+
+  // ─────────────────────────────
+  // RENDER CHIPS
+  // ─────────────────────────────
+
+  function renderChips(chips) {
+    const grid = document.getElementById('chip-grid');
+    grid.innerHTML = chips.map(chip => `
+      <div class="chip-card ${chip.enabled ? 'on' : ''}" id="chip-card-${chip.id}">
+        <div>
+          <div class="chip-name">${chip.name}</div>
+          <div class="chip-status">
+            ${chip.enabled ? '✓ Active this week' : 'Not active'}
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox"
+            ${chip.enabled ? 'checked' : ''}
+            onchange="toggleChip('${chip.id}', this)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    `).join('');
+  }
+
+  // ─────────────────────────────
+  // TOGGLE CHIP
+  // ─────────────────────────────
+
+  async function toggleChip(id, checkbox) {
+    try {
+      const res = await fetch('/admin/toggle-chip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': adminPassword
+        },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        const card = document.getElementById('chip-card-' + id);
+        const status = card.querySelector('.chip-status');
+        if (data.chip.enabled) {
+          card.classList.add('on');
+          status.textContent = '✓ Active this week';
+        } else {
+          card.classList.remove('on');
+          status.textContent = 'Not active';
+        }
+      } else {
+        // Revert the toggle if server rejected
+        checkbox.checked = !checkbox.checked;
+      }
+    } catch (err) {
+      checkbox.checked = !checkbox.checked;
+    }
+  }
+
+  // ─────────────────────────────
+  // RENDER USAGE LOG
+  // ─────────────────────────────
+
+  function renderUsage(log) {
+    const el = document.getElementById('usage-content');
+    if (!log || log.length === 0) {
+      el.innerHTML = '<div class="empty-state">No usage yet. Conversations will appear here.</div>';
+      return;
+    }
+    const rows = [...log].reverse().map(entry => `
+      <tr>
+        <td style="white-space:nowrap">${formatTime(entry.timestamp)}</td>
+        <td>${escHtml(entry.userMessage)}…</td>
+        <td>${entry.activeChips && entry.activeChips.length
+              ? entry.activeChips.join(', ')
+              : '<span style="color:#bbb">None</span>'}</td>
+      </tr>
+    `).join('');
+    el.innerHTML = `
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>User Message (preview)</th>
+            <th>Active Chips</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // ─────────────────────────────
+  // RENDER SATISFACTION CHART
+  // ─────────────────────────────
+
+  function renderSatisfaction(log) {
+    const barsEl = document.getElementById('sat-bars');
+    const summaryEl = document.getElementById('sat-summary');
+
+    if (!log || log.length === 0) {
+      barsEl.innerHTML = '<div style="color:#bbb;font-size:13px;padding:20px 0;">No ratings yet.</div>';
+      summaryEl.textContent = '';
+      return;
+    }
+
+    // Group scores by date
+    const byDate = {};
+    log.forEach(entry => {
+      if (!byDate[entry.date]) byDate[entry.date] = [];
+      byDate[entry.date].push(entry.score);
+    });
+
+    const dates = Object.keys(byDate).sort();
+    const avgs = dates.map(d => {
+      const scores = byDate[d];
+      return +(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+    });
+
+    barsEl.innerHTML = dates.map((date, i) => {
+      const heightPct = (avgs[i] / 10) * 100;
+      return `
+        <div class="chart-bar-wrap">
+          <div class="chart-bar-value">${avgs[i]}</div>
+          <div class="chart-bar" style="height:${heightPct}%"></div>
+          <div class="chart-bar-label">${formatDate(date)}</div>
+        </div>`;
+    }).join('');
+
+    const allScores = log.map(e => e.score);
+    const overall = (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(1);
+    summaryEl.textContent =
+      `Overall average: ${overall} / 10 across ${log.length} rating${log.length !== 1 ? 's' : ''}`;
+  }
+
+  // ─────────────────────────────
+  // RENDER FEEDBACK LOG
+  // ─────────────────────────────
+
+  function renderFeedback(log) {
+    const el = document.getElementById('feedback-content');
+    if (!log || log.length === 0) {
+      el.innerHTML = '<div class="empty-state">No feedback yet. Submissions will appear here.</div>';
+      return;
+    }
+    el.innerHTML = [...log].reverse().map(entry => `
+      <div class="feedback-item">
+        <div class="fb-time">${formatTime(entry.timestamp)}</div>
+        <div class="fb-msg">${escHtml(entry.message)}</div>
+      </div>`).join('');
+  }
+
+  // ─────────────────────────────
+  // TAB SWITCHING
+  // ─────────────────────────────
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  // ─────────────────────────────
+  // CHAT
+  // ─────────────────────────────
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    const sendBtn = document.getElementById('send-btn');
+    sendBtn.disabled = true;
+    input.value = '';
+    document.getElementById('satisfaction-area').style.display = 'none';
+
+    addMessage('user', message);
+    conversationHistory.push({ role: 'user', content: message });
+
+    const typingId = addMessage('typing', 'Your coach is thinking…');
+
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: message,
+          history: conversationHistory.slice(0, -1).slice(-10)
+        })
+      });
+      const data = await res.json();
+      removeMessage(typingId);
+
+      if (data.reply) {
+        addMessage('coach', data.reply);
+        conversationHistory.push({ role: 'assistant', content: data.reply });
+        document.getElementById('satisfaction-area').style.display = 'block';
+      } else {
+        addMessage('coach', 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      removeMessage(typingId);
+      addMessage('coach', 'Connection error. Please check your internet and try again.');
+    }
+
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  function addMessage(type, text) {
+    const messages = document.getElementById('messages');
+    const id = 'msg-' + Date.now() + Math.random();
+    const div = document.createElement('div');
+    div.className = 'message ' + type;
+    div.id = id;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return id;
+  }
+
+  function removeMessage(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  // ─────────────────────────────
+  // SATISFACTION
+  // ─────────────────────────────
+
+  async function submitSatisfaction(score) {
+    document.getElementById('satisfaction-area').style.display = 'none';
+    try {
+      await fetch('/satisfaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score })
+      });
+    } catch (err) { /* silent — don't interrupt user */ }
+  }
+
+  // ─────────────────────────────
+  // FEEDBACK MODAL
+  // ─────────────────────────────
+
+  function showFeedbackModal() {
+    document.getElementById('feedback-modal').style.display = 'block';
+    document.getElementById('modal-overlay').style.display = 'block';
+    document.getElementById('feedback-text').value = '';
+    setTimeout(() => document.getElementById('feedback-text').focus(), 50);
+  }
+
+  function closeFeedbackModal() {
+    document.getElementById('feedback-modal').style.display = 'none';
+    document.getElementById('modal-overlay').style.display = 'none';
+  }
+
+  async function submitFeedback() {
+    const text = document.getElementById('feedback-text').value.trim();
+    if (!text) return;
+    closeFeedbackModal();
+    try {
+      await fetch('/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+    } catch (err) { /* silent */ }
+  }
+
+  // ─────────────────────────────
+  // HELPERS
+  // ─────────────────────────────
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function formatTime(ts) {
+    return new Date(ts).toLocaleString('en-US', {
+      month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return (d.getMonth() + 1) + '/' + d.getDate();
+  }
+
+</script>
+</body>
+</html>
